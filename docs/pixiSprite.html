@@ -1,12 +1,44 @@
 <html>
     <body>
         <h1>Pixi sprites
-        <canvas
-            id="mycanvas"
-            style="width: 100%; height:100%; display: block;"
-        ></canvas>
         <script src="./js/lib/pixi.js"></script>
         <script>
+// from http://pixijs.download/release/docs/index.html
+
+// The application will create a renderer using WebGL, if possible,
+// with a fallback to a canvas render. It will also setup the ticker
+// and the root stage PIXI.Container.
+var app = new PIXI.Application();
+
+// The application will create a canvas element for you that you 
+// can then insert into the DOM.
+document.body.appendChild(app.view);
+
+// load the texture we need
+PIXI.loader.add('boat', './img/boat.png').load(function(loader, resources) {
+
+    // This creates a texture from a 'boat.png' image.
+    var boat = new PIXI.Sprite(resources.boat.texture);
+
+    // Setup the position of the boat
+    boat.x = app.renderer.width / 2;
+    boat.y = app.renderer.height / 2;
+
+    // Rotate around the center
+    boat.anchor.x = 0.5;
+    boat.anchor.y = 0.5;
+
+    // Add the boat to the scene we are building.
+    app.stage.addChild(boat);
+
+app.renderer.backgroundColor = 0x00c0ff;
+
+    // Listen for frame updates
+    app.ticker.add(function() {
+             // each frame we spin the boat around a bit
+            boat.rotation += 0.01;
+        });
+});
         </script>
     </body>
 </html>
