@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+    <head>
+        <style type="text/css">
+            * {
+                padding: 0;
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas
+            id="canvas"
+            style="width: 600px; height:600px; display: block; float: left"
+        ></canvas>
+        <script src="./js/lib/matter.js"></script>
+        <script src="./js/lib/pixi.js"></script>
+        <script>
+            // module aliases
+            var Engine = Matter.Engine,
+                Render = Matter.Render,
+                World = Matter.World,
+                Bodies = Matter.Bodies;
+                Body = Matter.Body;
+                Events = Matter.Events;
+
+            var boatList = [];
+
+            // create an engine
+            var engine = Engine.create();
+
+            // create a renderer (matter.js)
+            var matterRender = Render.create({
+                canvas: document.getElementById('canvas'),
+                options: {
+                    width: 600,
+                    height: 600
+                },
+                engine: engine
+            });
+
+            // create a renderer
+            var renderer = PIXI.autoDetectRenderer(
+                600,
+                600,
+                {
+                    antialias: true,
+                    backgroundColor : 0x1099BB,
+                    resolution: 1,
+                    transparent: false
+                }
+            );
+            var stage = new PIXI.Container();
+            document.body.appendChild(renderer.view);
+
+            // zero gravity to simulate water viewed from top
+            engine.world.gravity.y = 0;
+
+            var Ripple = function (stage, world) {
+                this.splashRate = 1.02;
+                this.radius = 50;
+                this.alpha = 1.0;
+                this.posX = 600;
+                this.posY = 600;
+
+                // create sprite
+                this.sprite = new PIXI.Graphics();
+                this.sprite.lineStyle(2, 0xFFFFFF, 1);
+                this.sprite.beginFill(0xAFAFAF, 0.5);
+                this.sprite.drawCircle(this.posX, this.posY, this.radius);
+                this.sprite.endFill();
+                stage.addChild(this.sprite);
+
+                // create body
+                this.body = Bodies.circle(
+                    this.posX,
+                    this.posY,
+                    this.radius,
+                    {
+                        isSensor: true,
+                        isStatic: true
+                    }
+                );
+                World.add(world, this.body);
+
+                this.getSprit = function () {
+                    return this.sprite;
+                };
+
+                this.getBody = function () {
+                    return this.body;
+                };
+
+                this.moveMe = function(x, y) {
+                    this.posX = x;
+                    this.posY = y;
+                    Body.setPosition(this.body, {x: x, y: y});
+                };
+
+                this.unsplashMe = function () {
+                    this.radius = 10;
+                    this.alpha = 1.0;
+                    this.sprite.clear();
+                    Body.scale(this.body, 0.1, 0.1);
+                };
+
+                this.splashMe = function () {
+                    this.radius *= this.splashRate;
+                    this.alpha *= 0.97;
+                    this.sprite.clear();
+                    this.sprite.lineStyle(2, 0xFFFFFF, this.alpha);
+                    this.sprite.beginFill(0xAFAFAF, (this.alpha * 0.5));
+                    this.sprite.drawCircle(
+                        this.posX,
+                        this.posY,
+                        this.radius
+                    );
+                    this.sprite.endFill();
+
+                    Body.scale(this.body, this.splashRate, this.splashRate);
+                };
+            };
+
+            var ripple = new Ripple(stage, engine.world),
+                maxRadius = 130,
+                maxForce = 0.005;
+
+            var Boat = function (stage, world) {
+                var posX = Math.random() * 600,
+                    posY = Math.random() * 600;
+
+                // create sprite
+                this.sprite = new PIXI.Graphics();
+                this.sprite.lineStyle(1, 0x000000, 1);
+                this.sprite.beginFill(0xCFCFCF, 1);
+                this.sprite.drawCircle(
+                    posX,
+                    posY,
+                    30
+                );
+                this.sprite.endFill();
+                stage.addChild(this.sprite);
+
+                //create body
+                this.body = Bodies.circle(
+                    posX,
+                    posY,
+                    30,
+                    { frictionAir: 0.001 }
+                );
+                World.add(world, this.body);
+
+                this.update = function () {
+                    this.sprite.clear();
+                    this.sprite.lineStyle(1, 0x000000, 1);
+                    this.sprite.beginFill(0xCFCFCF, 1);
+                    this.sprite.drawCircle(
+                        this.body.position.x,
+                        this.body.position.y,
+                        30
+                    );
+                    this.sprite.endFill();
+                };
+
+                this.getSprite = function () {
+                    return this.sprite;
+                };
+
+                this.getBody = function () {
+                    return this.body;
+                };
+            };
+
+            var boundaries = [
+                Bodies.rectangle(300, 600, 600, 20, {isStatic: true}),
+                Bodies.rectangle(300, 0, 600, 20, {isStatic: true}),
+                Bodies.rectangle(0, 300, 20, 600, {isStatic: true}),
+                Bodies.rectangle(600, 300, 20, 600, {isStatic: true}),
+
+            ];
+
+            World.add(engine.world, boundaries);
+            for (var b = 0; b < 6; b++) {
+                boatList.push(new Boat(stage, engine.world));
+            }
+
+            Events.on(engine, 'collisionStart', function(event) {
+                var pairs = event.pairs;
+                var sensor = pairs[0].bodyA;
+                if (sensor.isSensor === false) {
+                    return;
+                }
+
+                var boat = pairs[0].bodyB;
+                var deltaX = boat.position.x - sensor.position.x;
+                var deltaY = boat.position.y - sensor.position.y;
+                var pX = deltaX / maxRadius;
+                var pY = deltaY / maxRadius;
+                var sX = deltaX < 0 ? -1 : 1;
+                var sY = deltaY < 0 ? -1 : 1;
+                var forceX = (1 - Math.abs(pX)) * maxForce * sX;
+                var forceY = (1 - Math.abs(pY)) * maxForce * sY;
+                window.queuedForce = { x: forceX, y: forceY };
+                window.boatToForce = boat;
+
+            })
+
+            Events.on(engine, 'beforeUpdate', function(event) {
+                if (window.queuedForce) {
+                    var boat = window.boatToForce;
+                    Body.applyForce(boat, boat.position, window.queuedForce);
+                    window.queuedForce = null;
+                }
+            })
+
+            // run the engine
+            Engine.run(engine);
+
+            // run the renderer (matter.js)
+            Render.run(matterRender);
+
+            function step() {
+                for (var i = 0; i < boatList.length; i++) {
+                    boatList[i].update();
+                }
+
+                ripple.splashMe();
+                if (ripple.getBody().circleRadius > maxRadius) {
+                    ripple.unsplashMe();
+                    ripple.moveMe(
+                        Math.random() * 600,
+                        Math.random() * 600
+                    );
+                }
+
+                // render the container
+                renderer.render(stage);
+                window.requestAnimationFrame(step);
+            }
+
+            window.requestAnimationFrame(step);
+        </script>
+    </body>
+</html>
