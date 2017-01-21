@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style type="text/css">
+            * {
+                padding: 0;
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <!--
+        <canvas
+            id="canvas"
+            style="width: 600px; height:600px; display: block; float: left"
+        ></canvas>
+        -->
+        <script src="./js/lib/matter.js" type="text/javascript"></script>
+        <script src="./js/lib/pixi.js" type="text/javascript"></script>
+        <script src="./js/lib/fastclick.js" type="text/javascript"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                FastClick.attach(document.body);
+            }, false);
+
+            // module aliases
+            var Engine = Matter.Engine,
+                Render = Matter.Render,
+                World = Matter.World,
+                Bodies = Matter.Bodies;
+                Body = Matter.Body;
+                Events = Matter.Events;
+
+            var boatList = [],
+                rockList = [],
+                maxForce = 0.005;
+
+            // create an engine
+            var engine = Engine.create();
+            // zero gravity to simulate water viewed from top
+            engine.world.gravity.y = 0;
+
+            // create a renderer (matter.js)
+            // var matterRender = Render.create({
+            //     canvas: document.getElementById('canvas'),
+            //     options: {
+            //         width: 600,
+            //         height: 600
+            //     },
+            //     engine: engine
+            // });
+
+            // create a renderer
+            var renderer = PIXI.autoDetectRenderer(
+                600,
+                600,
+                {
+                    antialias: true,
+                    backgroundColor : 0x1099BB,
+                    resolution: 1,
+                    transparent: false
+                }
+            );
+            var stage = new PIXI.Container();
+            document.body.appendChild(renderer.view);
+
+            var Ripple = function (stage, world, size, x, y) {
+                this.size = size;
+                this.posX = x;
+                this.posY = y;
+                this.splashRate = 1.015;
+                this.radius = 10;
+                this.maxRadius = 50 * size;
+                this.radiusScale = this.radius / this.maxRadius;
+                this.alpha = 1.0;
+                this.done = false;
+
+                // create sprite
+                this.sprite = new PIXI.Graphics();
+                this.sprite.lineStyle(2, 0xFFFFFF, 1);
+                this.sprite.beginFill(0xAFAFAF, 0.5);
+                this.sprite.drawCircle(this.posX, this.posY, this.radius);
+                this.sprite.endFill();
+                stage.addChildAt(this.sprite, 0);
+
+                // create body
+                this.body = Bodies.circle(
+                    this.posX,
+                    this.posY,
+                    this.maxRadius,
+                    {
+                        isSensor: true,
+                        isStatic: true
+                    }
+                );
+                this.body.label = 'Ripple';
+                this.body.maxRadius = this.maxRadius;
+                Body.scale(this.body, this.radiusScale, this.radiusScale);
+                World.add(world, this.body);
+
+                this.getSprite = function () {
+                    return this.sprite;
+                };
+
+                this.getBody = function () {
+                    return this.body;
+                };
+
+                this.getSize = function () {
+                    return this.size;
+                };
+
+                this.isDone = function () {
+                    return this.done;
+                };
+
+                this.update = function () {
+                    this.radius *= this.splashRate;
+                    this.alpha *= 0.965;
+                    this.sprite.clear();
+                    if ((this.radius > 25) && (this.size > 1)) {
+                        this.sprite.lineStyle(1, 0xFFFFFF, this.alpha);
+                        this.sprite.drawCircle(
+                            this.posX,
+                            this.posY,
+                            this.radius * 0.5
+                        );
+                    }
+
+                    if ((this.radius > 50) && (this.size > 2)) {
+                        this.sprite.lineStyle(1, 0xFFFFFF, this.alpha);
+                        this.sprite.drawCircle(
+                            this.posX,
+                            this.posY,
+                            this.radius * 0.25
+                        );
+                    }
+
+                    this.sprite.lineStyle(2, 0xFFFFFF, this.alpha);
+                    this.sprite.beginFill(0xAFAFAF, (this.alpha * 0.5));
+                    this.sprite.drawCircle(
+                        this.posX,
+                        this.posY,
+                        this.radius
+                    );
+                    this.sprite.endFill();
+
+                    Body.scale(this.body, this.splashRate, this.splashRate);
+
+                    if (this.body.circleRadius > this.maxRadius) {
+                        this.done = true;
+                        stage.removeChild(this.sprite);
+
+                        World.remove(world, this.body);
+                    }
+                };
+            };
+
+            var Boat = function (stage, world) {
+                var posX = Math.random() * 600,
+                    posY = Math.random() * 600;
+
+                // create sprite
+                this.sprite = new PIXI.Sprite(
+                    PIXI.loader.resources['img/boat-small.png'].texture
+                );
+                this.sprite.position.set(posX, posY);
+                this.sprite.anchor.set(0.5, 0.5);
+                stage.addChild(this.sprite);
+
+                //create body
+                this.body = Bodies.fromVertices(
+                    posX,
+                    posY,
+                    [
+                        {x: 22, y: 0},
+                        {x: 44, y: 43},
+                        {x: 22, y: 86},
+                        {x: 0, y: 43}
+                    ],
+                    {frictionAir: 0.001}
+                );
+                this.body.label = 'Boat';
+                World.add(world, this.body);
+
+                this.update = function () {
+                    this.sprite.position = this.body.position;
+                    this.sprite.rotation = this.body.angle;
+                };
+
+                this.getSprite = function () {
+                    return this.sprite;
+                };
+
+                this.getBody = function () {
+                    return this.body;
+                };
+            };
+
+            Events.on(engine, 'collisionStart', function(event) {
+                var pairs = event.pairs;
+                if (pairs[0].bodyA.isSensor) {
+                    var sensor = pairs[0].bodyA;
+                    var boat = pairs[0].bodyB;
+                } else if (pairs[0].bodyB.isSensor) {
+                    var sensor = pairs[0].bodyB;
+                    var boat = pairs[0].bodyA;
+                } else {
+                    return;
+                }
+
+                var deltaX = boat.position.x - sensor.position.x;
+                var deltaY = boat.position.y - sensor.position.y;
+                var pX = deltaX / sensor.maxRadius;
+                var pY = deltaY / sensor.maxRadius;
+                var sX = deltaX < 0 ? -1 : 1;
+                var sY = deltaY < 0 ? -1 : 1;
+                var forceX = (1 - Math.abs(pX)) * maxForce * sX;
+                var forceY = (1 - Math.abs(pY)) * maxForce * sY;
+                window.queuedForce = { x: forceX, y: forceY };
+                window.boatToForce = boat;
+            });
+
+            Events.on(engine, 'beforeUpdate', function(event) {
+                if (window.queuedForce) {
+                    var boat = window.boatToForce;
+                    Body.applyForce(boat, boat.position, window.queuedForce);
+                    window.queuedForce = null;
+                }
+            });
+
+            PIXI.loader
+                .add('img/boat-small.png')
+                .load(function () {
+
+                    // world boundaries (avoids boats float outside user view)
+                    var boundaries = [
+                        Bodies.rectangle(300, 600, 600, 20, {isStatic: true}),
+                        Bodies.rectangle(300, 0, 600, 20, {isStatic: true}),
+                        Bodies.rectangle(0, 300, 20, 600, {isStatic: true}),
+                        Bodies.rectangle(600, 300, 20, 600, {isStatic: true})
+                    ];
+
+                    World.add(engine.world, boundaries);
+                    for (var b = 0; b < 6; b++) {
+                        boatList.push(new Boat(stage, engine.world));
+                    }
+
+                    // run the engine
+                    Engine.run(engine);
+
+                    // run the renderer (matter.js)
+                    // Render.run(matterRender);
+
+                    renderer.view.addEventListener('click', function (event) {
+                        var rect = renderer.view.getBoundingClientRect();
+                        rockList.push(
+                            new Ripple(
+                                stage,
+                                engine.world,
+                                Math.floor((Math.random() * 3) + 1),
+                                event.clientX - rect.left,
+                                event.clientY - rect.top
+                            )
+                        );
+                    });
+
+                    window.requestAnimationFrame(step);
+                });
+
+            function step() {
+                for (var i = 0; i < boatList.length; i++) {
+                    boatList[i].update();
+                }
+
+                var tempList = [];
+                while (rockList.length) {
+                    var ripple = rockList.pop();
+                    if (ripple.isDone()) {
+                        continue;
+                    }
+
+                    ripple.update();
+                    tempList.push(ripple);
+                }
+                rockList = tempList;
+
+                // render the container
+                renderer.render(stage);
+                window.requestAnimationFrame(step);
+            }
+        </script>
+    </body>
+</html>

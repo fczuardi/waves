@@ -11,6 +11,7 @@
     "build:libs": "node ./tasks/copy-libs.js"
   },
   "dependencies": {
+    "fastclick": "^1.0.6",
     "matter-js": "^0.11.1",
     "pixi.js": "^4.3.4"
   },
