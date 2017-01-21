@@ -7,7 +7,7 @@
   "author": "Fabricio C Zuardi <fabricio@fabricio.org>",
   "license": "AGPL-3",
   "scripts": {
-    "start": "http-server docs",
+    "start": "http-server docs -p 8081",
     "build:libs": "node ./tasks/copy-libs.js"
   },
   "dependencies": {
