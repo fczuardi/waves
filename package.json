@@ -1,0 +1,9 @@
+{
+  "name": "fczwaves",
+  "version": "0.1.0",
+  "description": "tests for a global game jam entry",
+  "main": "index.js",
+  "repository": "git@github.com:fczuardi/waves.git",
+  "author": "Fabricio C Zuardi <fabricio@fabricio.org>",
+  "license": "AGPL-3"
+}
