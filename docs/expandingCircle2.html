@@ -78,6 +78,7 @@ Events.on(engine, 'collisionStart', function(event){
     var sY = deltaY < 0 ? -1 : 1;
     var forceX = (1 - Math.abs(pX)) * maxForce * sX;
     var forceY = (1 - Math.abs(pY)) * maxForce * sY;
+    // see https://github.com/liabru/matter-js/issues/134
     window.queuedForce = { x: forceX, y: forceY };
     window.boatToForce = boat;
 
@@ -104,10 +105,6 @@ function step(t){
 Body.setPosition(ripple1, {x: Math.random() * 700 - 50,  y: Math.random() * 700 - 50});
     }
     window.requestAnimationFrame(step);
-    /*
-    if (!window.hasCollided){
-    }
-    */
 }
 window.requestAnimationFrame(step);
 
