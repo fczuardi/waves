@@ -5,5 +5,14 @@
   "main": "index.js",
   "repository": "git@github.com:fczuardi/waves.git",
   "author": "Fabricio C Zuardi <fabricio@fabricio.org>",
-  "license": "AGPL-3"
+  "license": "AGPL-3",
+  "scripts": {
+      "build:libs": "node ./tasks/copy-libs.js"
+  },
+  "dependencies": {
+    "matter-js": "^0.11.1"
+  },
+  "devDependencies": {
+    "shelljs": "^0.7.6"
+  }
 }
