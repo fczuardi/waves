@@ -1,10 +1,12 @@
 var Matter = require('matter-js');
 var Graphics = require('pixi.js').Graphics;
+var ease = require('eases/cubic-out');
 var config = require('./config').ripples;
 
 var { Body, Bodies, World } = Matter;
 var {
     radiusSizes,
+    tweenTimes,
     initialRadius,
     splashRate,
     stroke,
@@ -35,6 +37,7 @@ var Ripple = function (x, y, type, engine, stage, ticker) {
     this.x = x;
     this.y = y;
     this.alpha = 1;
+    this.time = Date.now();
     this.radius = initialRadius;
     this.sprite = new Graphics();
     this.body = Bodies.circle(x, y, maxRadius, {
@@ -74,10 +77,13 @@ var Ripple = function (x, y, type, engine, stage, ticker) {
     }).bind(this);
 
     this.step = (function () {
-        this.radius *= splashRate;
-        this.alpha = 1 - (this.radius / maxRadius);
+        var deltaTime = Date.now() - this.time;
+        var percentTime = deltaTime / tweenTimes[type];
+        var percentStep = ease(percentTime);
+        this.radius = percentStep * maxRadius;
+        this.alpha = 1 - percentStep; 
         this.sprite.clear();
-        if (this.radius > maxRadius){
+        if (percentStep > 1){
             // destroy the ripple
             stage.removeChild(this.sprite);
             World.remove(engine.world, this.body);

@@ -9,7 +9,6 @@
   "scripts": {
     "start": "budo ./src/index.js --port 8081 --dir ./docs --live --force-default-index -- -t [babelify]",
     "build:app": "bankai build -j [--transform babelify] ./src/index.js ./docs",
-    "start:demos": "http-server docs -p 8082",
     "build:libs": "node ./tasks/copy-libs.js"
   },
   "babel": {
@@ -18,6 +17,8 @@
     ]
   },
   "dependencies": {
+    "bel": "^4.5.1",
+    "eases": "^1.0.8",
     "fastclick": "^1.0.6",
     "matter-js": "^0.11.1",
     "pixi.js": "^4.3.4"
