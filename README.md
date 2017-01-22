@@ -10,11 +10,17 @@ libs necessary for a 2D boat-golf game.
 ```
 yarn install
 yarn build:libs
-yarn start:demos
+yarn start
 ```
 
-## Game bundle
+## Building the Game bundle
 
 `
 yarn bundle:app
+`
+
+## Formatting a javascript file (uses prettier)
+
+`
+yarn format -- path/to/filename
 `

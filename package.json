@@ -9,7 +9,8 @@
   "scripts": {
     "start": "budo ./src/index.js --port 8081 --dir ./docs --live --force-default-index -- -t [babelify]",
     "build:app": "browserify -t [babelify] ./src/index.js -o ./docs/bundle.js",
-    "build:libs": "node ./tasks/copy-libs.js"
+    "build:libs": "node ./tasks/copy-libs.js",
+    "format": "prettier --write"
   },
   "babel": {
     "plugins": [
