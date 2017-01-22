@@ -17,9 +17,6 @@ var rippleP = new Ripple(50, 50, 0, engine, stage, ticker)
 var rippleM = new Ripple(200, 100, 1, engine, stage, ticker)
 var rippleG = new Ripple(450, 150, 2, engine, stage, ticker)
 
-console.log(ticker.started);
-console.log(ticker.add);
-
 var debugRender = new DebugRenderer(engine);
 debugRender.run();
 

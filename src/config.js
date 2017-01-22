@@ -5,14 +5,13 @@ var config = {
     ripples: {
         radiusSizes: [50, 100, 150],
         initialRadius: 10,
+        splashRate: 1.015,
         stroke: {
             width: 2,
-            color: 0xFFFFFF,
-            opacity: 1
+            color: 0xFFFFFF
         },
         fill: {
-            color: 0xAFAFAF,
-            opacity: 0.5
+            color: 0xAFAFAF
         }
     }
 };
