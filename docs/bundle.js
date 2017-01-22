@@ -51137,7 +51137,7 @@ var Controls = function (rippleFactory) {
 
 module.exports = Controls;
 
-},{"./ripple":198,"./sounds":199,"fastclick":7}],194:[function(require,module,exports){
+},{"./ripple":199,"./sounds":200,"fastclick":7}],194:[function(require,module,exports){
 var Render = require('matter-js').Render;
 var config = require('./config');
 
@@ -51165,13 +51165,14 @@ module.exports = DebugRender;
 // Global Game Jam 2017
 //
 
+var html = require('bel');
 var Physics = require('./physics');
 var Renderer = require('./render');
 var Controls = require('./controls');
 var DebugRenderer = require('./debugRender');
 var Boat = require('./boat');
 var Ripple = require('./ripple');
-var html = require('bel');
+var Maps = require('./maps');
 
 var demosLink = html`<p>
     <a href="demos.html">see some demos</a>, 
@@ -51188,13 +51189,11 @@ document.body.appendChild(canvas);
 
 var engine = Physics.engine;
 
+Maps.loadMap(Maps.FullStage(stage), engine);
+
 loader.add(['img/boat-small.png']).load(game);
 
 function game() {
-    // var rippleP = new Ripple(50, 50, 0, engine, stage, ticker);
-    // var rippleM = new Ripple(200, 100, 1, engine, stage, ticker);
-    // var rippleG = new Ripple(450, 150, 2, engine, stage, ticker);
-
     var boatFactory = new Boat(loader.resources['img/boat-small.png'].texture, engine, stage, ticker);
 
     var boat = boatFactory.create(100, 100);
@@ -51208,13 +51207,46 @@ function game() {
     controls.init(canvas);
 }
 
-},{"./boat":191,"./controls":193,"./debugRender":194,"./physics":196,"./render":197,"./ripple":198,"bel":1}],196:[function(require,module,exports){
+},{"./boat":191,"./controls":193,"./debugRender":194,"./maps":196,"./physics":197,"./render":198,"./ripple":199,"bel":1}],196:[function(require,module,exports){
+var Matter = require("matter-js");
+var config = require("./config");
 
-var Matter = require('matter-js');
-var Ripple = require('./ripple');
-var config = require('./config');
+var Bodies = Matter.Bodies,
+    Composite = Matter.Composite,
+    World = Matter.World;
 
-// matter-js aliases
+
+function FullStage(stage) {
+  var width = config.width,
+      height = config.height;
+
+  var boundaryHeight = 20;
+  var boundaryOptions = { isStatic: true };
+  var map = Composite.create();
+  var top = Bodies.rectangle(width / 2, 1 - boundaryHeight / 2, width, boundaryHeight, boundaryOptions);
+  var bottom = Bodies.rectangle(width / 2, height + boundaryHeight / 2 - 1, width, boundaryHeight, boundaryOptions);
+  var left = Bodies.rectangle(1 - boundaryHeight / 2, height / 2 - 1, boundaryHeight, height, boundaryOptions);
+  var right = Bodies.rectangle(width + boundaryHeight / 2 - 1, height / 2 - 1, boundaryHeight, height, boundaryOptions);
+
+  Composite.add(map, top);
+  Composite.add(map, bottom);
+  Composite.add(map, left);
+  Composite.add(map, right);
+
+  return map;
+}
+
+function loadMap(map, engine) {
+  World.add(engine.world, map);
+}
+
+module.exports = { FullStage, loadMap };
+
+},{"./config":192,"matter-js":14}],197:[function(require,module,exports){
+var Matter = require("matter-js");
+var Ripple = require("./ripple");
+var config = require("./config");
+
 var Engine = Matter.Engine,
     World = Matter.World,
     Bodies = Matter.Bodies,
@@ -51227,56 +51259,57 @@ var engine = Engine.create();
 // zero gravity to simulate water viewed from top
 engine.world.gravity.y = 0;
 
-var boundaries = [Bodies.rectangle(400, 500, 800, 20, { isStatic: true }), Bodies.rectangle(400, 0, 800, 20, { isStatic: true }), Bodies.rectangle(0, 250, 20, 500, { isStatic: true }), Bodies.rectangle(800, 250, 20, 500, { isStatic: true })];
-
-World.add(engine.world, boundaries);
-
 // collision management
-Events.on(engine, 'collisionStart', function (event) {
-    event.pairs.forEach(function (pair) {
-        var bodies = [pair.bodyA, pair.bodyB];
-        var ripples = bodies.filter(function (body) {
-            return body.label.indexOf('Ripple') !== -1;
-        });
-        var boats = bodies.filter(function (body) {
-            return body.label.indexOf('Boat') !== -1;
-        });
-        var boat = boats.length ? boats[0] : null;
-        var ripple = ripples.length ? ripples[0] : null;
-
-        if (!boat || !ripple) {
-            return;
-        }
-        var maxForce = 0.005;
-        var maxRadius = config.ripples.radiusSizes[2];
-        var deltaX = boat.position.x - ripple.position.x;
-        var deltaY = boat.position.y - ripple.position.y;
-        var pX = deltaX / maxRadius;
-        var pY = deltaY / maxRadius;
-        var sX = deltaX < 0 ? -1 : 1;
-        var sY = deltaY < 0 ? -1 : 1;
-        var forceX = (1 - Math.abs(pX)) * maxForce * sX;
-        var forceY = (1 - Math.abs(pY)) * maxForce * sY;
-        window.queuedForce = { x: forceX, y: forceY };
-        window.boatToForce = boat;
+Events.on(engine, "collisionStart", function (event) {
+  event.pairs.forEach(function (pair) {
+    var bodies = [pair.bodyA, pair.bodyB];
+    var ripples = bodies.filter(function (body) {
+      return body.label.indexOf("Ripple") !== -1;
     });
+    var boats = bodies.filter(function (body) {
+      return body.label.indexOf("Boat") !== -1;
+    });
+    var boat = boats.length ? boats[0] : null;
+    var ripple = ripples.length ? ripples[0] : null;
+
+    if (!boat || !ripple) {
+      return;
+    }
+    var maxForce = 0.005;
+    // get the first contact point to be use in the math
+    var contact;
+    for (i in pair.contacts) {
+      contact = pair.contacts[i];
+      break;
+    }
+    var maxRadius = config.ripples.radiusSizes[2];
+    var deltaX = contact.vertex.x - ripple.position.x;
+    var deltaY = contact.vertex.y - ripple.position.y;
+    var pX = deltaX / maxRadius;
+    var pY = deltaY / maxRadius;
+    var sX = deltaX < 0 ? -1 : 1;
+    var sY = deltaY < 0 ? -1 : 1;
+    var forceX = (1 - Math.abs(pX)) * maxForce * sX;
+    var forceY = (1 - Math.abs(pY)) * maxForce * sY;
+    window.queuedForce = { x: forceX, y: forceY };
+    window.boatToForce = boat;
+    window.positionToForce = contact.vertex;
+  });
 });
 
-Events.on(engine, 'beforeUpdate', function (event) {
-    if (window.queuedForce) {
-        var boat = window.boatToForce;
-        Body.applyForce(boat, boat.position, window.queuedForce);
-        window.queuedForce = null;
-    }
+Events.on(engine, "beforeUpdate", function (event) {
+  if (window.queuedForce) {
+    var boat = window.boatToForce;
+    Body.applyForce(boat, window.positionToForce, window.queuedForce);
+    window.queuedForce = null;
+  }
 });
 
 Engine.run(engine);
 
-module.exports = {
-    engine
-};
+module.exports = { engine };
 
-},{"./config":192,"./ripple":198,"matter-js":14}],197:[function(require,module,exports){
+},{"./config":192,"./ripple":199,"matter-js":14}],198:[function(require,module,exports){
 var Pixi = require('pixi.js');
 var config = require('./config');
 
@@ -51296,7 +51329,7 @@ module.exports = {
     render: app.render
 };
 
-},{"./config":192,"pixi.js":145}],198:[function(require,module,exports){
+},{"./config":192,"pixi.js":145}],199:[function(require,module,exports){
 var Matter = require('matter-js');
 var Graphics = require('pixi.js').Graphics;
 var ease = require('eases/cubic-out');
@@ -51388,7 +51421,7 @@ var Ripple = function (x, y, type, engine, stage, ticker) {
 
 module.exports = Factory;
 
-},{"./config":192,"eases/cubic-out":5,"matter-js":14,"pixi.js":145}],199:[function(require,module,exports){
+},{"./config":192,"eases/cubic-out":5,"matter-js":14,"pixi.js":145}],200:[function(require,module,exports){
 var Howl = require('howler').Howl;
 
 var sources = function (filename) {
