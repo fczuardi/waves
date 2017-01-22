@@ -11,7 +11,7 @@ var {
     fill
 } = config;
 
-var Ripple = function(x, y, type, engine, stage, ticker) {
+var Ripple = function (x, y, type, engine, stage, ticker) {
     var maxRadius = radiusSizes[type];
     var initialScale = initialRadius / maxRadius;
 
@@ -24,12 +24,13 @@ var Ripple = function(x, y, type, engine, stage, ticker) {
         isSensor: true,
         isStatic: true
     });
+    this.body.label = 'Ripple' + type;
     Body.scale(this.body, initialScale, initialScale);
-    
+
     World.add(engine.world, this.body);
     stage.addChildAt(this.sprite, 0);
-    
-    this.draw = (function(){
+
+    this.draw = (function () {
         this.sprite.clear();
 
         // third ripple
@@ -55,7 +56,7 @@ var Ripple = function(x, y, type, engine, stage, ticker) {
         Body.scale(this.body, splashRate, splashRate);
     }).bind(this);
 
-    this.step = (function() {
+    this.step = (function () {
         this.radius *= splashRate;
         this.alpha = 1 - (this.radius / maxRadius);
         this.sprite.clear();
@@ -70,8 +71,8 @@ var Ripple = function(x, y, type, engine, stage, ticker) {
     }).bind(this);
 
     // we could use either Pixi's ticker or Matter's Runner here
-    // since they serve the same purpose, which is, to be a 
-    // wrapper for the requestAnimationFrame. 
+    // since they serve the same purpose, which is, to be a
+    // wrapper for the requestAnimationFrame.
     // I choose to go with Pixi's tick event. I dont know why.
     ticker.add(this.step);
 

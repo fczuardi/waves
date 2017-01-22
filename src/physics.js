@@ -16,7 +16,7 @@ var engine = Engine.create();
 // zero gravity to simulate water viewed from top
 engine.world.gravity.y = 0;
 
-function addBody(body){
+function addBody(body) {
 	World.add(engine.world, body);
 }
 
