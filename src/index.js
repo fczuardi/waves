@@ -9,6 +9,10 @@ var Controls = require('./controls');
 var DebugRenderer = require('./debugRender');
 var Boat = require('./boat');
 var Ripple = require('./ripple');
+var html = require('bel');
+
+var demosLink = html`<p><a href="demos.html">see some demos</a></p>`;
+document.body.appendChild(demosLink);
 
 var { loader, canvas, stage, ticker } = Renderer;
 document.body.appendChild(canvas);
