@@ -46847,14 +46847,13 @@ var config = {
     ripples: {
         radiusSizes: [50, 100, 150],
         initialRadius: 10,
+        splashRate: 1.015,
         stroke: {
             width: 2,
-            color: 0xFFFFFF,
-            opacity: 1
+            color: 0xFFFFFF
         },
         fill: {
-            color: 0xAFAFAF,
-            opacity: 0.5
+            color: 0xAFAFAF
         }
     }
 };
@@ -46905,9 +46904,6 @@ var engine = Physics.engine;
 var rippleP = new Ripple(50, 50, 0, engine, stage, ticker);
 var rippleM = new Ripple(200, 100, 1, engine, stage, ticker);
 var rippleG = new Ripple(450, 150, 2, engine, stage, ticker);
-
-console.log(ticker.started);
-console.log(ticker.add);
 
 var debugRender = new DebugRenderer(engine);
 debugRender.run();
@@ -46973,6 +46969,7 @@ var Body = Matter.Body,
     World = Matter.World;
 var radiusSizes = config.radiusSizes,
     initialRadius = config.initialRadius,
+    splashRate = config.splashRate,
     stroke = config.stroke,
     fill = config.fill;
 
@@ -46981,23 +46978,44 @@ var Ripple = function (x, y, type, engine, stage, ticker) {
     var maxRadius = radiusSizes[type];
     var initialScale = initialRadius / maxRadius;
 
+    this.x = x;
+    this.y = y;
+    this.alpha = 1;
+    this.radius = initialRadius;
+    this.sprite = new Graphics();
     this.body = Bodies.circle(x, y, maxRadius, {
         isSensor: true,
         isStatic: true
     });
-
-    this.sprite = new Graphics().lineStyle(stroke.width, stroke.color, stroke.opacity).beginFill(fill.color, fill.opacity).drawCircle(x, y, initialRadius).endFill();
-
     Body.scale(this.body, initialScale, initialScale);
 
     World.add(engine.world, this.body);
     stage.addChildAt(this.sprite, 0);
 
+    this.draw = function () {
+        this.sprite.clear().lineStyle(stroke.width, stroke.color, this.alpha).beginFill(fill.color, this.alpha).drawCircle(this.x, this.y, this.radius).endFill();
+        Body.scale(this.body, splashRate, splashRate);
+    }.bind(this);
+
+    this.step = function () {
+        this.radius *= splashRate;
+        this.alpha = 1 - this.radius / maxRadius;
+        this.sprite.clear();
+        if (this.radius > maxRadius) {
+            // destroy the ripple
+            stage.removeChild(this.sprite);
+            World.remove(engine.world, this.body);
+            ticker.remove(this.step);
+            return;
+        }
+        this.draw();
+    }.bind(this);
+
     // we could use either Pixi's ticker or Matter's Runner here
     // since they serve the same purpose, which is, to be a 
     // wrapper for the requestAnimationFrame. 
     // I choose to go with Pixi's tick event. I dont know why.
-    ticker.add(function step() {});
+    ticker.add(this.step);
 };
 
 module.exports = Ripple;
