@@ -5,18 +5,40 @@
 
 var Physics = require('./physics');
 var Renderer = require('./render');
+var Control = require('./controls');
 var DebugRenderer = require('./debugRender');
 var Ripple = require('./ripple');
+var Boat = require('./boat');
 
-var { canvas, stage, ticker } = Renderer;
+var { loader, canvas, stage, ticker } = Renderer;
 document.body.appendChild(canvas);
 
 var engine = Physics.engine;
 
-var rippleP = new Ripple(50, 50, 0, engine, stage, ticker)
-var rippleM = new Ripple(200, 100, 1, engine, stage, ticker)
-var rippleG = new Ripple(450, 150, 2, engine, stage, ticker)
+loader
+    .add([
+        'img/boat-small.png'
+    ])
+    .load(game);
 
-var debugRender = new DebugRenderer(engine);
-debugRender.run();
+function game() {
+    // var rippleP = new Ripple(50, 50, 0, engine, stage, ticker);
+    // var rippleM = new Ripple(200, 100, 1, engine, stage, ticker);
+    // var rippleG = new Ripple(450, 150, 2, engine, stage, ticker);
 
+    var boat = new Boat(
+        100,
+        100,
+        loader.resources['img/boat-small.png'].texture,
+        engine,
+        stage,
+        ticker
+    );
+
+    var debugRender = new DebugRenderer(engine);
+    debugRender.run();
+
+    console.log(canvas, Control.dropRock);
+
+    canvas.addEventListener('click', Control.dropRock);
+}
