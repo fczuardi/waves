@@ -1,34 +1,39 @@
+<!DOCTYPE html>
 <html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
     <body>
-        <h1>Mouse Clicks
+        <h1>Mouse Clicks</h1>
         <script src="./js/lib/pixi.js"></script>
         <script>
-var app = new PIXI.Application();
-var canvas = app.view;
-document.body.appendChild(canvas);
+            var app = new PIXI.Application();
+            var canvas = app.view;
+            document.body.appendChild(canvas);
 
-canvas.addEventListener('click', onClick);
+            canvas.addEventListener('click', onClick);
 
-// from http://stackoverflow.com/a/19048340
-function getMousePos(canvas, evt) {
-    var rect = canvas.getBoundingClientRect();
-    return {
-      x: evt.clientX - rect.left,
-      y: evt.clientY - rect.top
-    };
-  }
+            // from http://stackoverflow.com/a/19048340
+            function getMousePos(canvas, evt) {
+                var rect = canvas.getBoundingClientRect();
+                return {
+                    x: evt.clientX - rect.left,
+                    y: evt.clientY - rect.top
+                };
+              }
 
-function onClick(event){
-    var mousePos = getMousePos(canvas, event);
-    var dot = new PIXI.Graphics();
-    var radius = 3;
-    dot.beginFill(0xff0000);
-    dot.drawCircle(0, 0, radius);
-    dot.endFill();
-    dot.x = mousePos.x;
-    dot.y = mousePos.y;
-    app.stage.addChild(dot); 
-}
+            function onClick(event){
+                var mousePos = getMousePos(canvas, event);
+                var dot = new PIXI.Graphics();
+                var radius = 3;
+                dot.beginFill(0xff0000);
+                dot.drawCircle(0, 0, radius);
+                dot.endFill();
+                dot.x = mousePos.x;
+                dot.y = mousePos.y;
+                app.stage.addChild(dot);
+            }
         </script>
     </body>
 </html>
