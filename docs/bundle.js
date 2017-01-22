@@ -46895,15 +46895,19 @@ var DebugRenderer = require('./debugRender');
 var Ripple = require('./ripple');
 
 var canvas = Renderer.canvas,
-    stage = Renderer.stage;
+    stage = Renderer.stage,
+    ticker = Renderer.ticker;
 
 document.body.appendChild(canvas);
 
 var engine = Physics.engine;
 
-var rippleP = new Ripple(50, 50, 0, engine, stage);
-var rippleM = new Ripple(200, 100, 1, engine, stage);
-var rippleG = new Ripple(450, 150, 2, engine, stage);
+var rippleP = new Ripple(50, 50, 0, engine, stage, ticker);
+var rippleM = new Ripple(200, 100, 1, engine, stage, ticker);
+var rippleG = new Ripple(450, 150, 2, engine, stage, ticker);
+
+console.log(ticker.started);
+console.log(ticker.add);
 
 var debugRender = new DebugRenderer(engine);
 debugRender.run();
@@ -46955,6 +46959,7 @@ app.renderer.backgroundColor = bgColor;
 module.exports = {
 	canvas: app.view,
 	stage: app.stage,
+	ticker: app.ticker,
 	render: app.render
 };
 
@@ -46967,21 +46972,32 @@ var Body = Matter.Body,
     Bodies = Matter.Bodies,
     World = Matter.World;
 var radiusSizes = config.radiusSizes,
+    initialRadius = config.initialRadius,
     stroke = config.stroke,
     fill = config.fill;
 
 
-var Ripple = function (x, y, type, engine, stage) {
+var Ripple = function (x, y, type, engine, stage, ticker) {
     var maxRadius = radiusSizes[type];
+    var initialScale = initialRadius / maxRadius;
+
     this.body = Bodies.circle(x, y, maxRadius, {
         isSensor: true,
         isStatic: true
     });
 
-    this.sprite = new Graphics().lineStyle(stroke.width, stroke.color, stroke.opacity).beginFill(fill.color, fill.opacity).drawCircle(x, y, maxRadius).endFill();
+    this.sprite = new Graphics().lineStyle(stroke.width, stroke.color, stroke.opacity).beginFill(fill.color, fill.opacity).drawCircle(x, y, initialRadius).endFill();
+
+    Body.scale(this.body, initialScale, initialScale);
 
     World.add(engine.world, this.body);
     stage.addChildAt(this.sprite, 0);
+
+    // we could use either Pixi's ticker or Matter's Runner here
+    // since they serve the same purpose, which is, to be a 
+    // wrapper for the requestAnimationFrame. 
+    // I choose to go with Pixi's tick event. I dont know why.
+    ticker.add(function step() {});
 };
 
 module.exports = Ripple;
