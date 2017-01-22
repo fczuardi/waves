@@ -11,6 +11,23 @@ var {
     fill
 } = config;
 
+var Factory = function (engine, stage, ticker) {
+    this.engine = engine;
+    this.stage = stage;
+    this.ticker = ticker;
+
+    this.create = function (x, y, type) {
+        return new Ripple(
+            x,
+            y,
+            type,
+            this.engine,
+            this.stage,
+            this.ticker
+        );
+    };
+};
+
 var Ripple = function (x, y, type, engine, stage, ticker) {
     var maxRadius = radiusSizes[type];
     var initialScale = initialRadius / maxRadius;
@@ -78,5 +95,5 @@ var Ripple = function (x, y, type, engine, stage, ticker) {
 
 }
 
-module.exports = Ripple;
+module.exports = Factory;
 

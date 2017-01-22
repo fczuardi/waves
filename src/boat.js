@@ -7,6 +7,24 @@ var {
     airFriction
 } = config;
 
+var Factory = function (texture, engine, stage, ticker) {
+    this.texture = texture;
+    this.engine = engine;
+    this.stage = stage;
+    this.ticker = ticker;
+
+    this.create = function (x, y) {
+        return new Boat(
+            x,
+            y,
+            this.texture,
+            this.engine,
+            this.stage,
+            this.ticker
+        );
+    };
+};
+
 var Boat = function (x, y, texture, engine, stage, ticker) {
     this.x = x;
     this.y = y;
@@ -38,4 +56,4 @@ var Boat = function (x, y, texture, engine, stage, ticker) {
     ticker.add(this.step);
 };
 
-module.exports = Boat;
+module.exports = Factory;
