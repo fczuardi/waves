@@ -29,9 +29,15 @@ Events.on(engine, 'collisionStart', function(event){
             return;
         }
         var maxForce = 0.005;
+        // get the first contact point to be use in the math
+        var contact;
+        for (i in pair.contacts){
+            contact = pair.contacts[i];
+            break;
+        }
         var maxRadius = config.ripples.radiusSizes[2]; 
-        var deltaX = boat.position.x - ripple.position.x;
-        var deltaY = boat.position.y - ripple.position.y;
+        var deltaX = contact.vertex.x - ripple.position.x;
+        var deltaY = contact.vertex.y - ripple.position.y;
         var pX = deltaX / maxRadius;
         var pY = deltaY / maxRadius;
         var sX = deltaX < 0 ? -1 : 1;
@@ -40,13 +46,14 @@ Events.on(engine, 'collisionStart', function(event){
         var forceY = (1 - Math.abs(pY)) * maxForce * sY;
         window.queuedForce = { x: forceX, y: forceY };
         window.boatToForce = boat;
+        window.positionToForce = contact.vertex;
     })
 });
 
 Events.on(engine, 'beforeUpdate', function(event){
     if (window.queuedForce) {
         var boat = window.boatToForce;
-        Body.applyForce(boat, boat.position, window.queuedForce);
+        Body.applyForce(boat, window.positionToForce, window.queuedForce);
         window.queuedForce = null;
     }
 });
