@@ -5,12 +5,16 @@
 The idea is to collect and learn how to use some physics and sprites rendering
 libs necessary for a 2D boat-golf game.
 
-## Building de developer environment
+## Building the developer environment
 
 ```
 yarn install
 yarn build:libs
-yarn start
+yarn start:demos
 ```
 
+## Game bundle
 
+`
+yarn bundle:app
+`
