@@ -73,7 +73,8 @@ var Ripple = function (x, y, type, engine, stage, ticker) {
             .drawCircle(this.x, this.y, this.radius)
             .endFill();
 
-        Body.scale(this.body, splashRate, splashRate);
+        var nextScale = this.radius / this.body.circleRadius;
+        Body.scale(this.body, nextScale, nextScale);
     }).bind(this);
 
     this.step = (function () {
