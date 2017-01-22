@@ -51227,6 +51227,10 @@ var engine = Engine.create();
 // zero gravity to simulate water viewed from top
 engine.world.gravity.y = 0;
 
+var boundaries = [Bodies.rectangle(400, 500, 800, 20, { isStatic: true }), Bodies.rectangle(400, 0, 800, 20, { isStatic: true }), Bodies.rectangle(0, 250, 20, 500, { isStatic: true }), Bodies.rectangle(800, 250, 20, 500, { isStatic: true })];
+
+World.add(engine.world, boundaries);
+
 // collision management
 Events.on(engine, 'collisionStart', function (event) {
     event.pairs.forEach(function (pair) {
@@ -51239,8 +51243,6 @@ Events.on(engine, 'collisionStart', function (event) {
         });
         var boat = boats.length ? boats[0] : null;
         var ripple = ripples.length ? ripples[0] : null;
-        console.log({ boat });
-        console.log({ ripple });
 
         if (!boat || !ripple) {
             return;
@@ -51255,11 +51257,17 @@ Events.on(engine, 'collisionStart', function (event) {
         var sY = deltaY < 0 ? -1 : 1;
         var forceX = (1 - Math.abs(pX)) * maxForce * sX;
         var forceY = (1 - Math.abs(pY)) * maxForce * sY;
-        console.log({ forceX });
-        console.log({ forceY });
         window.queuedForce = { x: forceX, y: forceY };
         window.boatToForce = boat;
     });
+});
+
+Events.on(engine, 'beforeUpdate', function (event) {
+    if (window.queuedForce) {
+        var boat = window.boatToForce;
+        Body.applyForce(boat, boat.position, window.queuedForce);
+        window.queuedForce = null;
+    }
 });
 
 Engine.run(engine);
