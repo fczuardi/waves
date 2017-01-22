@@ -1,3 +1,4 @@
+var Ripple = require('./ripple');
 var FastClick = require('fastclick').FastClick;
 
 // enable faster clicks on mobile
@@ -11,4 +12,16 @@ function getMousePos(canvas, evt) {
       y: evt.clientY - rect.top
     };
   }
+
+
+function dropRock(event){
+    console.log('a click');
+    var mousePos = getMousePos(event.target, event);
+
+    
+}
+
+module.exports = {
+    dropRock
+};
 
