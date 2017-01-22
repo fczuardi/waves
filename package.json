@@ -7,8 +7,15 @@
   "author": "Fabricio C Zuardi <fabricio@fabricio.org>",
   "license": "AGPL-3",
   "scripts": {
-    "start": "http-server docs -p 8081",
+    "start": "bankai ./src/index.js -p 8081",
+    "build:app": "bankai build -j [--transform babelify] ./src/index.js ./docs",
+    "start:demos": "http-server docs -p 8082",
     "build:libs": "node ./tasks/copy-libs.js"
+  },
+  "babel": {
+    "plugins": [
+      "transform-es2015-destructuring"
+    ]
   },
   "dependencies": {
     "fastclick": "^1.0.6",
@@ -16,7 +23,11 @@
     "pixi.js": "^4.3.4"
   },
   "devDependencies": {
+    "babel-plugin-transform-es2015-destructuring": "^6.22.0",
+    "babelify": "^7.3.0",
+    "bankai": "^5.2.1",
     "http-server": "^0.9.0",
+    "prettier": "^0.0.10",
     "shelljs": "^0.7.6"
   }
 }
