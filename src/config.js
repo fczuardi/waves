@@ -13,8 +13,10 @@ var config = {
         fill: {
             color: 0xAFAFAF
         }
+    },
+    boat: {
+        airFriction: 0.001
     }
 };
 
 module.exports = config;
-
