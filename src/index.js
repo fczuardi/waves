@@ -11,7 +11,10 @@ var Boat = require('./boat');
 var Ripple = require('./ripple');
 var html = require('bel');
 
-var demosLink = html`<p><a href="demos.html">see some demos</a></p>`;
+var demosLink = html`<p>
+    <a href="demos.html">see some demos</a>, 
+    <a href="https://github.com/fczuardi/waves">see the source</a>
+</p>`;
 document.body.appendChild(demosLink);
 
 var { loader, canvas, stage, ticker } = Renderer;
