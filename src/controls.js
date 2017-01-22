@@ -25,7 +25,18 @@ var Controls = function (rippleFactory) {
         console.log('a click');
         var mousePos = getMousePos(event.target, event);
         rippleFactory.create(mousePos.x, mousePos.y, 2);
-        sounds.bigRock.play();
+        var rockSize = 2;
+        switch (rockSize) {
+            case 0:
+                sounds.tinyRock.play();
+                break;
+            case 1:
+                sounds.mediumRock.play();
+                break;
+            case 2:
+                sounds.bigRock.play();
+                break;
+        }
         
     };
 };
