@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>sample</title>
+	</head>
+
+	<body onload="init()">
+		<h1 id="startButton">Start Button.</h1>
+		<br>
+		<br>
+		<h1 id="bigRock">Big Rock Drop.</h1>
+		<br>
+		<br>
+		<h1 id="mediumRock">Medium Rock Drop</h1>
+		<br>
+		<br>
+		<h1 id="tinyRock">Tiny Rock Drop</h1>
+		<br>
+		<br>
+		<h1 id="finalWin">Final Win</h1>
+		<br>
+		<br>
+		<h1 id="reachesFlag">Reaches flag</h1>
+		<br>
+		<br>
+		<h1 id="bubblingWater">Fail Fase</h1>
+		<br>
+		<br>
+		<h1 id="menuItem">Choose Rock</h1>
+		<br>
+		<br>
+		<h1 id="collision">Boats Collision</h1>
+
+		<script src="https://code.createjs.com/createjs-2015.05.21.min.js"></script>
+
+		<script>
+			var startButton;
+			var bigRock;
+			var mediumRock;
+			var tinyRock;
+			var finalWin;
+			var reachesFlag;
+			var bubblingWater;
+			var menuItem;
+			var collision;
+			var soundInstance;
+
+			function init() {
+				startButton = document.getElementById("startButton");
+				startButton.addEventListener("click", handleStartButtonClick, false);
+
+				bigRock = document.getElementById("bigRock");
+				bigRock.addEventListener("click", playSong, false);
+
+				mediumRock = document.getElementById("mediumRock");
+				mediumRock.addEventListener("click", playSong, false);
+
+				tinyRock = document.getElementById("tinyRock");
+				tinyRock.addEventListener("click", playSong, false);
+
+				finalWin = document.getElementById("finalWin");
+				finalWin.addEventListener("click", playSong, false);
+
+				reachesFlag = document.getElementById("reachesFlag");
+				reachesFlag.addEventListener("click", playSong, false);
+
+				bubblingWater = document.getElementById("bubblingWater");
+				bubblingWater.addEventListener("click", playSong, false);
+
+				menuItem = document.getElementById("menuItem");
+				menuItem.addEventListener("click", playSong, false);
+
+				collision = document.getElementById("collision");
+				collision.addEventListener("click", playSong, false);
+			}
+
+			function handleStartButtonClick(event) {
+				console.log(event);
+				startButton.removeEventListener("click", handleStartButtonClick, false);
+				var myApp = new myNameSpace.MyApp();
+			}
+
+			function playSong(event) {
+				if(event.target.id == "bigRock") {
+					createjs.Sound.play("BigRockDroppedSound");
+				} else if(event.target.id == "mediumRock") {
+					createjs.Sound.play("MediumRockDroppedSound");
+				} else if(event.target.id == "tinyRock") {
+					createjs.Sound.play("TinyRockDroppedSound");
+				} else if(event.target.id == "finalWin") {
+					soundInstance.stop();
+					createjs.Sound.play("GameCompletedMusic");
+				} else if(event.target.id == "reachesFlag") {
+					createjs.Sound.play("ReachedChestSound");
+				} else if(event.target.id == "bubblingWater") {
+					createjs.Sound.play("WaterBubblingSound");
+				} else if(event.target.id == "menuItem") {
+					createjs.Sound.play("MenuItemTouchedSound");
+				} else if(event.target.id == "collision") {
+					createjs.Sound.play("CollisionSound");
+				}
+			}
+
+			this.myNameSpace = this.myNameSpace || {};
+			(function() {
+				// the application
+				function MyApp() {
+					this.init();
+				}
+
+				MyApp.prototype = {
+					displayMessage:null,
+
+					init: function() {
+						this.displayMessage = document.getElementById("startButton");
+
+						if (!createjs.Sound.initializeDefaultPlugins()) {return;}
+
+						var audioPath = "../GameJam/AudioTests/DefinetelyWillUse/";
+						var sounds = [
+							{id:"BeforeStartBackgroundMusic", src:"MenuBackgroundSong.ogg"},
+							{id:"DuringGameBackgroundMusic", src:"ThemeSongLong.ogg"},
+							{id:"MenuItemTouchedSound", src:"BeepMenu.ogg"},
+							{id:"BigRockDroppedSound", src:"BigRock.ogg"},
+							{id:"MediumRockDroppedSound", src:"MediumRock.ogg"},
+							{id:"TinyRockDroppedSound", src:"TinyRock.ogg"},
+							{id:"ReachedChestSound", src:"ChestOpening.ogg"},
+							{id:"WaterBubblingSound", src:"WaterBubbling.ogg"},
+							{id:"GameCompletedMusic", src:"FinalWin.ogg"},
+							{id:"CollisionSound", src:"Collision.ogg"}
+						];
+
+						this.displayMessage.innerHTML = "loading audio";
+						createjs.Sound.alternateExtensions = ["mp3"];
+						var loadProxy = createjs.proxy(this.handleLoad, this);
+						createjs.Sound.addEventListener("fileload", loadProxy);
+						createjs.Sound.registerSounds(sounds, audioPath);
+					},
+
+					handleLoad: function(event) {
+						if(event.id == "DuringGameBackgroundMusic") {
+							soundInstance = createjs.Sound.play(event.src, {interrupt: createjs.Sound.INTERRUPT_ANY, loop:-1});
+							soundInstance.setVolume(0.2);
+							this.displayMessage.innerHTML = "Playing " + event.id;
+						}
+					}
+				}
+
+				myNameSpace.MyApp = MyApp;
+			}());
+		</script>
+	</body>
+</html>
