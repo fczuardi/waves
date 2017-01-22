@@ -7,7 +7,7 @@
   "author": "Fabricio C Zuardi <fabricio@fabricio.org>",
   "license": "AGPL-3",
   "scripts": {
-    "start": "budo ./src/index.js --port 8081 --dir ./docs -- -t [babelify]",
+    "start": "budo ./src/index.js --port 8081 --dir ./docs --live --force-default-index -- -t [babelify]",
     "build:app": "bankai build -j [--transform babelify] ./src/index.js ./docs",
     "start:demos": "http-server docs -p 8082",
     "build:libs": "node ./tasks/copy-libs.js"
