@@ -3,13 +3,14 @@
 // Global Game Jam 2017
 //
 
+var html = require('bel');
 var Physics = require('./physics');
 var Renderer = require('./render');
 var Controls = require('./controls');
 var DebugRenderer = require('./debugRender');
 var Boat = require('./boat');
 var Ripple = require('./ripple');
-var html = require('bel');
+var Maps = require('./maps');
 
 var demosLink = html`<p>
     <a href="demos.html">see some demos</a>, 
@@ -22,6 +23,8 @@ document.body.appendChild(canvas);
 
 var engine = Physics.engine;
 
+Maps.loadMap(Maps.FullStage(stage), engine);
+
 loader
     .add([
         'img/boat-small.png'
@@ -29,10 +32,6 @@ loader
     .load(game);
 
 function game() {
-    // var rippleP = new Ripple(50, 50, 0, engine, stage, ticker);
-    // var rippleM = new Ripple(200, 100, 1, engine, stage, ticker);
-    // var rippleG = new Ripple(450, 150, 2, engine, stage, ticker);
-
     var boatFactory = new Boat(
         loader.resources['img/boat-small.png'].texture,
         engine,

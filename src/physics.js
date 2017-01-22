@@ -3,7 +3,6 @@ var Matter = require('matter-js');
 var Ripple = require('./ripple');
 var config = require('./config');
 
-// matter-js aliases
 var {
     Engine,
     World,
@@ -16,16 +15,6 @@ var engine = Engine.create();
 
 // zero gravity to simulate water viewed from top
 engine.world.gravity.y = 0;
-
-var boundaries = [
-    Bodies.rectangle(400, 500, 800, 20, {isStatic: true}),
-    Bodies.rectangle(400, 0, 800, 20, {isStatic: true}),
-    Bodies.rectangle(0, 250, 20, 500, {isStatic: true}),
-    Bodies.rectangle(800, 250, 20, 500, {isStatic: true}),
-
-];
-
-World.add(engine.world, boundaries);
 
 // collision management
 Events.on(engine, 'collisionStart', function(event){
