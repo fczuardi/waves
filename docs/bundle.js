@@ -46845,7 +46845,7 @@ var config = {
     height: 500,
     bgColor: 0x1099BB,
     ripples: {
-        radiusSizes: [50, 100, 150],
+        radiusSizes: [25, 50, 75],
         initialRadius: 10,
         splashRate: 1.015,
         stroke: {
@@ -46993,7 +46993,20 @@ var Ripple = function (x, y, type, engine, stage, ticker) {
     stage.addChildAt(this.sprite, 0);
 
     this.draw = function () {
-        this.sprite.clear().lineStyle(stroke.width, stroke.color, this.alpha).beginFill(fill.color, this.alpha).drawCircle(this.x, this.y, this.radius).endFill();
+        this.sprite.clear();
+
+        // third ripple
+        if (type > 1 && this.radius > radiusSizes[1] / 2) {
+            this.sprite.lineStyle(stroke.width, stroke.color, this.alpha).drawCircle(this.x, this.y, this.radius * 0.25);
+        }
+        // second ripple
+        if (type > 0 && this.radius > radiusSizes[0] / 2) {
+            this.sprite.lineStyle(stroke.width, stroke.color, this.alpha).drawCircle(this.x, this.y, this.radius * 0.5);
+        }
+
+        // main ripple
+        this.sprite.lineStyle(stroke.width, stroke.color, this.alpha).beginFill(fill.color, this.alpha * 0.5).drawCircle(this.x, this.y, this.radius).endFill();
+
         Body.scale(this.body, splashRate, splashRate);
     }.bind(this);
 

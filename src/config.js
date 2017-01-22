@@ -3,7 +3,7 @@ var config = {
     height: 500,
 	bgColor: 0x1099BB,
     ripples: {
-        radiusSizes: [50, 100, 150],
+        radiusSizes: [25, 50, 75],
         initialRadius: 10,
         splashRate: 1.015,
         stroke: {
