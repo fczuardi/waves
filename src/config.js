@@ -1,7 +1,7 @@
 var config = {
     width: 800,
     height: 500,
-	bgColor: 0x1099BB,
+    bgColor: 0x1099BB,
     ripples: {
         radiusSizes: [25, 50, 75],
         initialRadius: 10,
