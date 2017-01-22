@@ -1,5 +1,6 @@
 var Ripple = require('./ripple');
 var FastClick = require('fastclick').FastClick;
+var sounds = require('./sounds');
 
 // enable faster clicks on mobile
 FastClick.attach(document.body);
@@ -23,8 +24,9 @@ var Controls = function (rippleFactory) {
     this.dropRock = function (event) {
         console.log('a click');
         var mousePos = getMousePos(event.target, event);
-
         rippleFactory.create(mousePos.x, mousePos.y, 2);
+        sounds.bigRock.play();
+        
     };
 };
 
