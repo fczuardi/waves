@@ -13,6 +13,7 @@ app.renderer.backgroundColor = bgColor;
 module.exports = {
 	canvas: app.view,
     stage: app.stage,
+    ticker: app.ticker,
 	render: app.render
 };
 
